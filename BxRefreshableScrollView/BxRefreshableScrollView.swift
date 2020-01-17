@@ -21,7 +21,7 @@ public struct RefreshableScrollView<Content: View>: View {
   var threshold: CGFloat = 80
   let content: Content
   
-  init(height: CGFloat = 80, refreshing: Binding<Bool>, @ViewBuilder content: () -> Content) {
+  public init(height: CGFloat = 80, refreshing: Binding<Bool>, @ViewBuilder content: () -> Content) {
     self.threshold = height
     self._refreshing = refreshing /// Use `_` to assign the underlying binding object
     self.content = content()
