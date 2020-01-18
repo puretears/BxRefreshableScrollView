@@ -46,7 +46,7 @@ struct ContentView: View {
           .aspectRatio(contentMode: .fit)
           .clipShape(RoundedRectangle(cornerRadius: 20))
           .padding(10)
-        Text(episode.title).font(.largeTitle).fontWeight(.bold)
+        Text(episode.title).font(.title).fontWeight(.bold)
         Text(episode.description)
       }
       .padding(6)

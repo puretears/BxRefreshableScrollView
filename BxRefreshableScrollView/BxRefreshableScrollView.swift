@@ -32,7 +32,6 @@ public struct RefreshableScrollView<Content: View>: View {
       ScrollView {
         ZStack(alignment: .top) {
           MovingView()
-          
           VStack {
             self.content
           }
@@ -62,7 +61,7 @@ public struct RefreshableScrollView<Content: View>: View {
       }
       
       if self.refreshing {
-        if self.scrollOffset > self.threshold && self.previousScrollOffset <= self.threshold {
+        if self.previousScrollOffset > self.threshold && self.scrollOffset <= self.threshold {
           self.frozen = true
         }
       }
@@ -73,7 +72,6 @@ public struct RefreshableScrollView<Content: View>: View {
       self.previousScrollOffset = self.scrollOffset
     }
   }
-  
   
   func symbolRotation(_ scrollOffset: CGFloat) -> Angle {
     if scrollOffset < threshold * 0.6 {
