@@ -61,7 +61,8 @@ public struct RefreshableScrollView<Content: View>: View {
       }
       
       if self.refreshing {
-        if self.previousScrollOffset > self.threshold && self.scrollOffset <= self.threshold {
+        // Keep the symbol view above the scrollview during updating process.
+        if self.previousScrollOffset > self.threshold && self.scrollOffset <= self.threshold { 
           self.frozen = true
         }
       }

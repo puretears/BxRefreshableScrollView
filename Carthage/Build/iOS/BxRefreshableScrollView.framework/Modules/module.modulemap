@@ -1,0 +1,11 @@
+framework module BxRefreshableScrollView {
+  umbrella header "BxRefreshableScrollView.h"
+
+  export *
+  module * { export * }
+}
+
+module BxRefreshableScrollView.Swift {
+    header "BxRefreshableScrollView-Swift.h"
+    requires objc
+}
