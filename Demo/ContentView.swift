@@ -11,14 +11,21 @@ import SwiftUI
 
 struct ContentView: View {
   @ObservedObject var vm = ViewModel()
-  @State private var loading: Bool = false
+//  @State private var loading: Bool = false
   
   var body: some View {
     VStack(spacing: 0) {
       HeaderView(title: "Refreshable Scroll View Demo")
       
-      RefreshableScrollView(height: 70, refreshing: self.$vm.loading) {
-        EpisodeView(episode: self.vm.episode)
+      RefreshableScrollView(
+      height: 70,
+      refreshing: self.$vm.loading, showBottomLoading: self.$vm.showBottomLoading,
+      showNoMoreData: self.$vm.showNoMoreData, noDataPrompt: "No more data...") {
+        VStack {
+          ForEach(vm.episodes, id: \.self) {
+            EpisodeView(episode: $0)
+          }
+        }
       }
       .padding(5)
       .background(Color(UIColor.secondarySystemBackground))
