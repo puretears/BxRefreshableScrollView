@@ -19,9 +19,12 @@ public struct RefreshableScrollView<Content: View>: View {
   @State private var rotation: Angle = .degrees(0)
   @State var contentBounds: CGRect = .zero
   
+  // Pull down to refresh
   @Binding var refreshing: Bool
-  @Binding var showBottomLoading: Bool
   
+  // Pull up to refresh
+  private let bottomRefreshable: Bool
+  @Binding var showBottomLoading: Bool
   @Binding var showNoMoreData: Bool
   var noDataPrompt: String
   
@@ -32,11 +35,15 @@ public struct RefreshableScrollView<Content: View>: View {
   let content: Content
   
   public init(height: CGFloat = 80,
-              refreshing: Binding<Bool>, showBottomLoading: Binding<Bool>,
-              showNoMoreData: Binding<Bool>, noDataPrompt: String,
+              refreshing: Binding<Bool>,
+              bottomRefreshable: Bool = false,
+              showBottomLoading: Binding<Bool> = .constant(false),
+              showNoMoreData: Binding<Bool> = .constant(false),
+              noDataPrompt: String = "",
               @ViewBuilder content: () -> Content) {
     self.threshold = height
     self._refreshing = refreshing /// Use `_` to assign the underlying binding object
+    self.bottomRefreshable = bottomRefreshable
     self._showBottomLoading = showBottomLoading
     self._showNoMoreData = showNoMoreData
     self.noDataPrompt = noDataPrompt
@@ -53,13 +60,15 @@ public struct RefreshableScrollView<Content: View>: View {
               key: RefreshableKey.ContentPrefKey.self,
               value: .bounds,
               transform: { [RefreshableKey.ContentPrefData(vType: .contentView, bounds: $0)] })
-          ZStack {
-            ActivityIndicator().opacity(showBottomLoading ? 1 : 0)
-            Text(noDataPrompt)
-              .opacity(showNoMoreData ? 1 : 0)
+          
+          if bottomRefreshable {
+            ZStack {
+              ActivityIndicator().opacity(showBottomLoading ? 1 : 0)
+              Text(noDataPrompt).opacity(showNoMoreData ? 1 : 0)
+            }
+            .foregroundColor(Color.secondary)
+            .padding([.top, .bottom], 5)
           }
-          .foregroundColor(Color.secondary)
-          .padding([.top, .bottom], 5)
         }
         .alignmentGuide(.top, computeValue: { d in (self.refreshing && self.frozen ? -self.threshold : 0.0) })
         SymbolView(height: self.threshold, loading: self.refreshing, frozen: self.frozen, rotation: self.rotation)
@@ -105,11 +114,14 @@ public struct RefreshableScrollView<Content: View>: View {
       frozen = false
     }
     
+    #if DEBUG
     print("Scroll offset: \(scrollOffset)")
     print("Fix height: \(fixedBounds.size.height)")
     print("Content bounds: \(contentBounds)")
     print("-------------------------")
-    if contentBounds.height > 0 &&
+    #endif
+    if bottomRefreshable,
+      contentBounds.height > 0 &&
       scrollOffset < -(contentBounds.height - fixedBounds.size.height) &&
       showBottomLoading == false &&
       showNoMoreData == false {

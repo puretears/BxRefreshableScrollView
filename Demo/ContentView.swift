@@ -19,8 +19,11 @@ struct ContentView: View {
       
       RefreshableScrollView(
       height: 70,
-      refreshing: self.$vm.loading, showBottomLoading: self.$vm.showBottomLoading,
-      showNoMoreData: self.$vm.showNoMoreData, noDataPrompt: "No more data...") {
+      refreshing: self.$vm.loading,
+      bottomRefreshable: true,
+      showBottomLoading: self.$vm.showBottomLoading,
+      showNoMoreData: self.$vm.showNoMoreData,
+      noDataPrompt: "No more data...") {
         VStack {
           ForEach(vm.episodes, id: \.self) {
             EpisodeView(episode: $0)
@@ -29,6 +32,18 @@ struct ContentView: View {
       }
       .padding(5)
       .background(Color(UIColor.secondarySystemBackground))
+      
+//      RefreshableScrollView(
+//      height: 70,
+//      refreshing: self.$vm.loading) {
+//        VStack {
+//          ForEach(vm.episodes, id: \.self) {
+//            EpisodeView(episode: $0)
+//          }
+//        }
+//      }
+//      .padding(5)
+//      .background(Color(UIColor.secondarySystemBackground))
     }
   }
   
