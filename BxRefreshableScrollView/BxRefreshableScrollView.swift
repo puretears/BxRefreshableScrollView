@@ -93,14 +93,16 @@ public struct RefreshableScrollView<Content: View>: View {
     .backgroundPreferenceValue(RefreshableKey.ContentPrefKey.self) {
       (preferences: [RefreshableKey.ContentPrefData]) in
       return GeometryReader { (proxy: GeometryProxy) -> FixedView in
-        let p = preferences.first(where: { $0.vType == .contentView })
-        
-        DispatchQueue.main.async {
-          if let pref = p {
-            self.contentBounds = proxy[pref.bounds]
+        if self.bottomRefreshable {
+          let p = preferences.first(where: { $0.vType == .contentView })
+          
+          DispatchQueue.main.async {
+            if let pref = p {
+              self.contentBounds = proxy[pref.bounds]
+            }
           }
         }
-
+        
         return FixedView()
       }
     }
