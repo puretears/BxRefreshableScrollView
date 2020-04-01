@@ -11,7 +11,6 @@ import SwiftUI
 
 struct ContentView: View {
   @ObservedObject var vm = ViewModel()
-//  @State private var loading: Bool = false
   
   var body: some View {
     VStack(spacing: 0) {
@@ -21,8 +20,8 @@ struct ContentView: View {
       height: 70,
       refreshing: self.$vm.loading,
       bottomRefreshable: true,
-      showBottomLoading: self.$vm.showBottomLoading,
       showNoMoreData: self.$vm.showNoMoreData,
+      showBottomLoading: self.$vm.showBottomLoading,
       noDataPrompt: "No more data...") {
         VStack {
           ForEach(vm.episodes, id: \.self) {

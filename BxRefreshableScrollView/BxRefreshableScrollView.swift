@@ -17,35 +17,35 @@ public struct RefreshableScrollView<Content: View>: View {
   // Keep the loading indication area above the scroll view.
   @State private var frozen: Bool = false
   @State private var rotation: Angle = .degrees(0)
-  @State var contentBounds: CGRect = .zero
+  
+  // Trigger the action after scrolling over the threshold.
+  var threshold: CGFloat = 80
   
   // Pull down to refresh
   @Binding var refreshing: Bool
   
   // Pull up to refresh
   private let bottomRefreshable: Bool
-  @Binding var showBottomLoading: Bool
   @Binding var showNoMoreData: Bool
+  @Binding var showBottomLoading: Bool
   var noDataPrompt: String
   
-  public var shouldContinueLoading = PassthroughSubject<Void, Never>()
+  @State var contentBounds: CGRect = .zero
   
-  // Trigger the action after scrolling over the threshold.
-  var threshold: CGFloat = 80
   let content: Content
   
   public init(height: CGFloat = 80,
               refreshing: Binding<Bool>,
               bottomRefreshable: Bool = false,
-              showBottomLoading: Binding<Bool> = .constant(false),
               showNoMoreData: Binding<Bool> = .constant(false),
+              showBottomLoading: Binding<Bool> = .constant(false),
               noDataPrompt: String = "",
               @ViewBuilder content: () -> Content) {
     self.threshold = height
-    self._refreshing = refreshing /// Use `_` to assign the underlying binding object
+    self._refreshing = refreshing
     self.bottomRefreshable = bottomRefreshable
-    self._showBottomLoading = showBottomLoading
     self._showNoMoreData = showNoMoreData
+    self._showBottomLoading = showBottomLoading
     self.noDataPrompt = noDataPrompt
     self.content = content()
   }
@@ -55,6 +55,13 @@ public struct RefreshableScrollView<Content: View>: View {
       ZStack(alignment: .top) {
         MovingView()
         VStack {
+          /// GeometryReader {
+          ///   self.content.preference(
+          ///     key: RefreshableKey.PrefKey.self,
+          ///     value: [
+          ///       RefreshableKey.PrefData(vType: .contentView,
+          ///       bounds: $0.frame(in: CoordinateSpace.local))
+          ///     ]) }
           self.content
             .anchorPreference(
               key: RefreshableKey.ContentPrefKey.self,
@@ -74,14 +81,26 @@ public struct RefreshableScrollView<Content: View>: View {
         SymbolView(height: self.threshold, loading: self.refreshing, frozen: self.frozen, rotation: self.rotation)
       }
     }
+//    .backgroundPreferenceValue(RefreshableKey.PrefKey.self) {
+//      (preferences: [RefreshableKey.PrefData]) in
+//      return GeometryReader { (proxy: GeometryProxy) -> FixedView in
+//        let p = preferences.first(where: { $0.vType == .contentView })!
+//        self.contentBounds = p.bounds
+//
+//        return FixedView()
+//      }
+//    }
     .backgroundPreferenceValue(RefreshableKey.ContentPrefKey.self) {
       (preferences: [RefreshableKey.ContentPrefData]) in
       return GeometryReader { (proxy: GeometryProxy) -> FixedView in
-        let p = preferences.first(where: { $0.vType == .contentView })!
-        DispatchQueue.main.async {
-          self.contentBounds = proxy[p.bounds]
-        }
+        let p = preferences.first(where: { $0.vType == .contentView })
         
+        DispatchQueue.main.async {
+          if let pref = p {
+            self.contentBounds = proxy[pref.bounds]
+          }
+        }
+
         return FixedView()
       }
     }
@@ -179,6 +198,12 @@ public struct RefreshableScrollView<Content: View>: View {
     var body: some View {
       GeometryReader {
         Color.clear
+          /// Compare to:
+          /// ```
+          /// .anchorPreference(key: TagPreferenceKey.self,
+          ///                   value: .bounds,
+          ///                   transform: { [TagPreferenceData(bounds: $0)] })
+          /// ```
           .preference(key: RefreshableKey.PrefKey.self,
                       value: [RefreshableKey.PrefData(vType: .movingView, bounds: $0.frame(in: .global))])
       }
